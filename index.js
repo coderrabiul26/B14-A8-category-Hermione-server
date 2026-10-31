@@ -42,7 +42,16 @@ app.get('/',(req, res)=>{
     res.send({message: 'server is running good'})
 })
 
-// http://localhost:8000/createEvent
+app.get('/upcomingEvent',async(req, res)=>{
+  const result= await eventCollection.find().toArray()
+  res.send(result)
+})
+
+
+// http://localhost:5000/upcomingEvent
+
+
+
 app.post('/createEvent', async(req, res)=>{
   const eventData= req.body
   const result= await eventCollection.insertOne(eventData)
