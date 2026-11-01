@@ -30,6 +30,7 @@ export async function connectToMongoDB() {
 const mongoclient= await connectToMongoDB()
 const db= mongoclient.db('b14-a8-category-hermione')
 const eventCollection= db.collection('event')
+const joinedEventCollection= db.collection('joinedEvent')
 
 
 app.listen(PORT, ()=>{
@@ -55,12 +56,19 @@ app.get('/eventDetails/:id',async(req, res)=>{
 })
 
 
-// http://localhost:5000/eventDetails/
+// http://localhost:5000/joinedEvent/
 
 
 
 app.post('/createEvent', async(req, res)=>{
   const eventData= req.body
   const result= await eventCollection.insertOne(eventData)
+  res.send(result)
+})
+
+
+app.post('/joinedEvent', async(req, res)=>{
+  const eventData= req.body
+  const result= await joinedEventCollection.insertOne(eventData)
   res.send(result)
 })
