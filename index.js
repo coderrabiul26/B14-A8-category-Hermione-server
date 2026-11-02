@@ -2,6 +2,7 @@ import express from 'express'
 import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 import cors from 'cors'
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 
 const app= express()
@@ -31,6 +32,28 @@ const mongoclient= await connectToMongoDB()
 const db= mongoclient.db('b14-a8-category-hermione')
 const eventCollection= db.collection('event')
 const joinedEventCollection= db.collection('joinedEvent')
+
+
+const verifyToken= async(req, res, next)=>{
+  const authHeader= req.headers.authorization;
+  console.log(authHeader);
+  if(!authHeader){
+    return res.status(401).send({msg: 'Unauthorized'})
+  }
+  const token= authHeader.split(' ')[1]
+  if(!token){
+    return res.status(401).send({msg: 'Unauthorized'})
+  }
+  const jwks= createRemoteJWKSet(new URL('http://localhost:3000/api/auth/jwks'))
+
+  try{
+    const {payload}= await jwtVerify(token, jwks)
+    next()
+  }catch(error){
+    return res.status(500).send({msg: 'Internal server error occured'})
+  }
+  
+}
 
 
 app.listen(PORT, ()=>{
@@ -72,13 +95,13 @@ app.get('/eventDetails/:id', async (req, res) => {
 })
 
 
-app.get('/createdEvent/:email',async(req, res)=>{
+app.get('/createdEvent/:email', verifyToken, async(req, res)=>{
   const {email}=req.params
   const result= await eventCollection.find({userEmail:email}).sort({date: 1}).toArray()
   res.send(result)
 })
 
-app.get('/joinedEvent/:email',async(req, res)=>{
+app.get('/joinedEvent/:email',verifyToken, async(req, res)=>{
   const {email}=req.params
   const result= await joinedEventCollection.find({userEmail:email}).sort({date: 1}).toArray()
   res.send(result)
@@ -89,7 +112,7 @@ app.get('/joinedEvent/:email',async(req, res)=>{
 
 
 
-app.post('/createEvent', async(req, res)=>{
+app.post('/createEvent', verifyToken, async(req, res)=>{
   const eventData= req.body
   const result= await eventCollection.insertOne(eventData)
   res.send(result)
