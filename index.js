@@ -13,10 +13,7 @@ app.use(express.json())
 const PORT= 5000
 
 
-
-
 const client = new MongoClient(process.env.MONGODB_URI);
-
 
 
 export async function connectToMongoDB() {
@@ -28,6 +25,7 @@ export async function connectToMongoDB() {
     console.dir(err);
   }
 }
+
 const mongoclient= await connectToMongoDB()
 const db= mongoclient.db('b14-a8-category-hermione')
 const eventCollection= db.collection('event')
@@ -59,7 +57,6 @@ const verifyToken= async(req, res, next)=>{
 app.listen(PORT, ()=>{
     console.log(`server is running at port ${PORT}`);
 })
-
 
 
 app.get('/',(req, res)=>{
@@ -106,9 +103,6 @@ app.get('/joinedEvent/:email',verifyToken, async(req, res)=>{
   const result= await joinedEventCollection.find({userEmail:email}).sort({date: 1}).toArray()
   res.send(result)
 })
-
-
-// http://localhost:5000/recentUpcomingEvent/
 
 
 
