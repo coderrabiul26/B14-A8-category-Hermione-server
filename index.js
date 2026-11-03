@@ -44,7 +44,7 @@ const verifyToken= async(req, res, next)=>{
   if(!token){
     return res.status(401).send({msg: 'Unauthorized'})
   }
-  const jwks= createRemoteJWKSet(new URL('http://localhost:3000/api/auth/jwks'))
+  const jwks= createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`))
 
   try{
     const {payload}= await jwtVerify(token, jwks)
@@ -125,8 +125,7 @@ app.post('/joinedEvent', async (req, res) => {
     const eventId = eventData.eventId ?? eventData._id;
     const userEmail = eventData.userEmail;
 
-    // A joined record must not keep the original event's _id, otherwise
-    // inserting a second join of the same event fails with E11000 (500).
+  
     delete eventData._id;
     if (eventId) {
       eventData.eventId = eventId;
@@ -166,3 +165,5 @@ app.delete('/deleteEvent/:id', async(req, res)=>{
     console.log(result);
     res.send(result)
 })
+
+export default app
